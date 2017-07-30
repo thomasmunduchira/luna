@@ -76,7 +76,7 @@ if ('webkitSpeechRecognition' in window) {
           } else if (isListeningForQueryActivated) { // if listening for query
             // listen for new queries without "Hello Luna" prompt for 9 seconds
             clearTimeout(timeSinceLunaActivatedTimer);
-            timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 9000);
+            timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery,4000);
 
             // if a non-null string exists for the query, get the intent
             if (latestString) {
@@ -281,7 +281,8 @@ function getIntent(query) {
     }),
     // on success, the api answer is captured in the data variable
     // execute functions in action.js depending on the intent
-    success: function(data) {
+    success: function(dat) {
+      var data = dat;
       console.log("data: " + JSON.stringify(data));
 
       // verbally notify the user if the intent is invalid
@@ -308,21 +309,21 @@ function getIntent(query) {
           });
           break;
         case "google_search":
-          var gUrl = "http://google.com/#q=" + data.result.googleQuery.split(" ").join("+");
+          var gUrl = "http://google.com/#q=" + data.result.parameters.any.split(" ").join("+");
           chrome.tabs.create({url: gUrl}, function(tab){
 
             console.log("google_search request completed!");
           });
           break;
         case "stackoverflow_search":
-          var soUrl = "https://stackoverflow.com/search?q=" + data.result.stackoverflowQuery.split(" ").join("+");
+          var soUrl = "https://stackoverflow.com/search?q=" + data.result.parameters.any.split(" ").join("+");
           chrome.tabs.create({url: soUrl}, function(tab){
 
             console.log("stackoverflow_search request completed!");
           });
           break;
         case "youtube_search":
-          var yUrl = "https://www.youtube.com/results?search_query=" + data.result.youtubeQuery.split(" ").join("+");
+          var yUrl = "https://www.youtube.com/results?search_query=" + data.result.parameters.any.split(" ").join("+");
           chrome.tabs.create({url: yUrl}, function(tab){
 
             console.log("youtube_search request completed!");
@@ -331,7 +332,7 @@ function getIntent(query) {
         case "zoom":
           chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
             chrome.tabs.getZoom(tabs[0].id, function(zoomFactor) {
-              var zoomType = data.result.zoomType;
+              var zoomType = data.result.parameters.zoomType;
               if(zoomType == "reset" || (zoomType == "out" && (zoomFactor - 0.25) <= 0)){
                 zoomChange = 1.0;
                 console.log("zoomChange reset to 1.0 aka 100%");
@@ -349,7 +350,7 @@ function getIntent(query) {
           });
           break;
         case "website_search":
-          var websiteUrl = !data.result.websiteUrl.includes("http") ? "http://" + data.result.websiteUrl : data.result.websiteUrl;
+          var websiteUrl = !data.result.parameters.url.includes("http") ? "http://" + data.result.parameters.websiteUrl : data.result.parameters.websiteUrl;
           if(websiteUrl.includes("..")){
             websiteUrl = websiteUrl.replace("..",".");
           }
@@ -368,13 +369,13 @@ function getIntent(query) {
                 chrome.bookmarks.create({"parentId": "1", "title": "Luna"},
                   function(newFolder) {
                     console.log("added folder: " + newFolder.title);
-                    addUrlToBookmarks(newFolder.id, title, url, gUser.id);
+                    addUrlToBookmarks(newFolder.id, title, url);
                 });
               }
               else {
                 console.log("bookmark results: " + JSON.stringify(results));
                 console.log("Found bookmark folder!!! " + results[0].id);
-                addUrlToBookmarks(results[0].id, title, url, gUser.id);
+                addUrlToBookmarks(results[0].id, title, url);
               }
             });
           });
@@ -397,7 +398,7 @@ function getIntent(query) {
           break;
         case "close_window":
 
-          if(data.result.windowType == "current"){
+          if(data.result.parameters.windowType == "current"){
             chrome.windows.getLastFocused(function(window){
               chrome.windows.remove(window.id, function(){
                 console.log("close_window request completed! (single window)");
@@ -424,9 +425,12 @@ function getIntent(query) {
         break;
         default:
           chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-            var params = { data: data.result.command, height: tabs[0].height};
-            if(data.result.command == "open_link"){
-              params.linkNumber = data.result.linkNumber;
+            var params = { data: data.result.action};
+            if(tabs[0].height !== undefined){
+              params.height = tabs[0].height;
+            }
+            if(data.result.parameters.command == "open_link"){
+              params.linkNumber = data.result.parameters.linkNumber;
             }
             chrome.tabs.sendMessage(tabs[0].id, params, function (response) {
               console.log("response: "+JSON.stringify(response));
