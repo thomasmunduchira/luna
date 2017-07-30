@@ -74,11 +74,12 @@ if ('webkitSpeechRecognition' in window) {
           } else if (isListeningForQueryActivated) { // if listening for query
             // listen for new queries without "Hello Luna" prompt for 9 seconds
             clearTimeout(timeSinceLunaActivatedTimer);
-            //timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 4000);
+            // timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 4000);
 
             // if a non-null string exists for the query, get the intent
             if (latestString) {
-              getIntent(latestString)
+              getIntent(latestString);
+              stopListeningForQuery();
             }
           }
           break;
