@@ -385,7 +385,7 @@ function getIntent(query) {
             break;
 
           case "website_search":
-            var websiteUrl = !data.result.parameters.url.includes("http") ? "http://" + data.result.parameters.websiteUrl : data.result.parameters.websiteUrl;
+            var websiteUrl = !data.result.parameters.url.includes("http") ? "http://" + data.result.parameters.url : data.result.parameters.url;
             if (websiteUrl.includes("..")) {
               websiteUrl = websiteUrl.replace("..", ".");
             }
@@ -404,7 +404,7 @@ function getIntent(query) {
             }, function(tabs) {
               var title = tabs[0].title;
               var url = tabs[0].url;
-              chrome.bookmarks.search("Browser Control", function(results) {
+              chrome.bookmarks.search("Luna", function(results) {
                 if (!results.length) {
                   chrome.bookmarks.create({
                     "parentId": "1",
@@ -506,6 +506,21 @@ function getIntent(query) {
               console.log("more_sitessearch request completed!");
             });
             break;
+
+          case "selective_tabclose":
+            chrome.tabs.query({
+              lastFocusedWindow: true,
+            }, function(tabs) {
+              var i;
+              for(i = 0; i < tabs.length; i++){
+                console.log("tab: " + JSON.stringify(tabs[i]));
+                  if(tabs[i].url.includes(data.result.parameters.url)){
+                    chrome.tabs.remove(tabs[i].id);
+                  }
+                }
+            });
+            break;
+
           default:
             chrome.tabs.query({
               currentWindow: true,
@@ -520,9 +535,13 @@ function getIntent(query) {
               if (data.result.action == "open_link") {
                 params.linkNumber = data.result.parameters.link_number;
               }
-              if (data.result.action = "type_textboxes") {
+              if (data.result.action == "type_textboxes") {
                 params.boxNumber = data.result.parameters.number;
                 params.boxValue = data.result.parameters.any;
+              }
+              if (data.result.action == "youtube_assist") {
+                params.youtubeStatus = data.result.parameters.youtubeStatus;
+                params.videoPos = data.result.parameters.videoPos;
               }
               chrome.tabs.sendMessage(tabs[0].id, params, function(response) {
                 console.log("response: " + JSON.stringify(response));
@@ -535,5 +554,12 @@ function getIntent(query) {
     error: function() {
       return "Internal Server Error";
     }
+  });
+}
+
+function addUrlToBookmarks(id, title, url){
+  chrome.bookmarks.create({"parentId": id, "title": title, "url": url},
+  function(result){
+    console.log("bookmark done!!!");
   });
 }

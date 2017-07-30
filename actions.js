@@ -7,6 +7,8 @@ var boxNumber;
 var boxValue;
 var synth = window.speechSynthesis;
 var description;
+var youtubeStatus;
+var videoPos;
 var utterThis = new SpeechSynthesisUtterance("");
 //new SpeechSynthesisUtterance("I'm sorry, I don't understand that request. Please try again later or try a different request.");
 
@@ -34,6 +36,14 @@ chrome.runtime.onMessage.addListener(
       description = request.description;
       console.log("description is: " + description);
     }
+    if (typeof request.youtubeStatus !== "undefined"){
+      youtubeStatus = request.youtubeStatus;
+      console.log("youtubeStatus is: " + youtubeStatus);
+    }
+    if (typeof request.videoPos !== "undefined"){
+      videoPos = request.videoPos;
+      console.log("videoPos is: " + videoPos);
+    }
     selectIntent(data);
   }
 );
@@ -51,7 +61,8 @@ var intentFuncMap = {
   "type_textboxes": typeTextboxes,
   "invert_colors": invertColors,
   "describe_images": describeImages,
-  "say_images": sayImages
+  "say_images": sayImages,
+  "youtube_assist": youtubeAssist
 };
 
 function scrollUp() {
@@ -206,6 +217,17 @@ function sayImages() {
   chrome.runtime.sendMessage({"actions" : "sayImages"}, function (response) {
       console.log("sayImages response: " + JSON.stringify(response));
   });
+}
+
+function youtubeAssist() {
+  if(youtubeStatus == "play" || youtubeStatus == "pause"){
+    document.getElementsByClassName('ytp-play-button')[0].click();
+  }
+  else {
+    if(videoPos !== undefined){
+      document.getElementById("video").currentTime = data.videoPos;
+    }
+  }
 }
 
 function selectIntent(data) {
