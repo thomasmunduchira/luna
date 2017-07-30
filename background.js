@@ -465,7 +465,7 @@ function getIntent(query) {
               if (tabs[0].height !== undefined) {
                 params.height = tabs[0].height;
               }
-              if (data.result.parameters.command == "open_link") {
+              if (data.result.action == "open_link") {
                 params.linkNumber = data.result.parameters.link_number;
               }
               chrome.tabs.sendMessage(tabs[0].id, params, function(response) {

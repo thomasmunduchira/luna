@@ -94,17 +94,16 @@ function showLinks() {
     array.push(links[i].href);
     console.log("link " + i + " on page: " + array[i]);
     links[i].innerHTML = "<mark>Link " + i + ":</mark> " + links[i].innerHTML;
-    links[i].setAttribute("id", i);
+    links[i].className += " chromeControlSelected-" + i;
   }
   chrome.runtime.sendMessage({"actions" : "showLinks"}, function (response) {
-      console.log("showLinks response: " + response);
+    console.log("showLinks response: " + response);
   });
 }
 
 function openLink() {
   console.log("I'm trying to open link");
-  var link = document.getElementById(linkNumber);
-  console.log(JSON.stringify(link));
+  var link = document.getElementsByClassName("chromeControlSelected-" + linkNumber)[0];
   window.location.href = link;
   chrome.runtime.sendMessage({"actions" : "openLink"}, function (response) {
       console.log("openLink response: " + JSON.stringify(response));
@@ -141,8 +140,7 @@ function describeImages() {
     console.log("Try to make call for get and analyze images");
     var images = document.getElementsByTagName('img');
     var srcList = [];
-    var i;
-    for(i = 0; i < 3; i++){
+    for(var i = 0; i < 5; i++){
       console.log("this is an OG img mofos: " + images[i].src);
       srcList.push(images[i].src);
     }
@@ -155,11 +153,11 @@ function describeImages() {
     },
     success: function (data) {
       console.log("images analysis works: " + JSON.stringify(data));
-      // var text = new SpeechSynthesisUtterance(data);
-      // synth.speak(text);
-      // chrome.runtime.sendMessage({"actions" : "describeImages"}, function (response) {
-      //     console.log("describeImages response: " + JSON.stringify(response));
-      // });
+      var text = new SpeechSynthesisUtterance(data);
+      synth.speak(text);
+      chrome.runtime.sendMessage({"actions" : "describeImages"}, function (response) {
+          console.log("describeImages response: " + JSON.stringify(response));
+      });
     }
   });
 }
