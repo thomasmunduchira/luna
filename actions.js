@@ -4,7 +4,8 @@ var timer;
 var height;
 var linkNumber;
 var synth = window.speechSynthesis;
-var utterThis = new SpeechSynthesisUtterance("I'm sorry, I don't understand that request. Please try again later or try a different request.");
+var utterThis = new SpeechSynthesisUtterance("");
+//new SpeechSynthesisUtterance("I'm sorry, I don't understand that request. Please try again later or try a different request.");
 
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {

@@ -397,7 +397,6 @@ function getIntent(query) {
           });
           break;
         case "close_window":
-
           if(data.result.parameters.windowType == "current"){
             chrome.windows.getLastFocused(function(window){
               chrome.windows.remove(window.id, function(){
@@ -418,9 +417,15 @@ function getIntent(query) {
           }
           break;
         case "restore_window":
-
           chrome.sessions.restore(function(restoredSession){
             console.log("restore_window request completed!");
+          });
+        break;
+        case "mute_tab": //new
+          chrome.tabs.query({lastFocusedWindow: true, active: true }, function (tabs) {
+            chrome.tabs.update(tabs[0].id, {muted: true}, function(){
+              console.log("mute_tab request completed!");
+            });
           });
         break;
         default:
