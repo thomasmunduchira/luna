@@ -174,7 +174,7 @@ function isOkayLunaCalled(latestString) {
 // Given that "Okay Luna" has been called, start listening for query
 function startListeningForQuery() {
   // trigger audio since Luna called
-  var beepOn = new Audio('beep_short_on.wav');
+  var beepOn = new Audio('audio/beep_short_on.wav');
   beepOn.play();
 
   // start animating Luna icon to indiate
@@ -212,7 +212,7 @@ function stopListeningForQuery() {
   isListeningForQueryActivated = false;
 
   // trigger audio to indicate Luna no longer registering the query
-  var beepOff = new Audio('beep_short_off.wav');
+  var beepOff = new Audio('audio/beep_short_off.wav');
   beepOff.play();
 
   // trigger the icon indicating Luna is listening
