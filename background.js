@@ -294,7 +294,7 @@ function multipleActions(actions, index, callback) {
   data.result = {};
   data.result.action = action;
   data.result.parameters = {};
-  
+
   processActions(data, function() {
     if (index === actions.length - 1) {
       if (callback) {
@@ -323,11 +323,17 @@ function processActions(data, callback) {
     switch (data.result.action) {
       case "combo_actions":
         var number = data.result.parameters.number || 100;
-        //check if number in firebase
+          firebase.database().ref("orders").once("value").then(function(s) {
+            // s.val()["-1"] this is how you access indiv order #s & associated arrays
+              //  "orders" : {
+            //   "-1" : [ "action1", "action2", "action3" ]
+            // }
+          });
         if () {
 
         } else {
           //save firebase
+          firebase.database().ref("orders").update(PUT JOSN HERE);
         }
         return multipleActions(actions, index, function() {
           if (callback) {
