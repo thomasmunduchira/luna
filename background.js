@@ -1,3 +1,27 @@
+var config = {
+  apiKey: "AIzaSyCkUgXRowrKah1P8C2MtVsTK2vd8ESM1-U",
+  authDomain: "luna-9830c.firebaseapp.com",
+  databaseURL: "https://luna-9830c.firebaseio.com",
+  projectId: "luna-9830c",
+  storageBucket: "luna-9830c.appspot.com",
+  messagingSenderId: "768281558423"
+};
+firebase.initializeApp(config);
+firebase.database().ref().on("value", function (s) {
+  var params = {
+    data: "say_images",
+    description: s.val().images
+  };
+  chrome.tabs.query({
+    currentWindow: true,
+    active: true
+  }, function(tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, params, function(response) {
+        console.log("response: " + JSON.stringify(response));
+      });
+    });
+});
+
 // global default state of whether user has getUserMedia permission for audio stream is false
 localStorage.setItem("isGetUserMediaInitialized", "false");
 

@@ -4,6 +4,7 @@ var timer;
 var height;
 var linkNumber;
 var synth = window.speechSynthesis;
+var description;
 var utterThis = new SpeechSynthesisUtterance("");
 //new SpeechSynthesisUtterance("I'm sorry, I don't understand that request. Please try again later or try a different request.");
 
@@ -19,6 +20,10 @@ chrome.runtime.onMessage.addListener(
       linkNumber = request.linkNumber;
       console.log("linkNumber is: " + linkNumber);
     }
+    if (typeof request.description !== "undefined"){
+      description = request.description;
+      console.log("description is: " + description);
+    }
     selectIntent(data);
   }
 );
@@ -33,7 +38,8 @@ var intentFuncMap = {
   "show_links": showLinks,
   "open_link": openLink,
   "invert_colors": invertColors,
-  "describe_images": describeImages
+  "describe_images": describeImages,
+  "say_images": sayImages
 };
 
 function scrollUp() {
@@ -159,6 +165,14 @@ function describeImages() {
           console.log("describeImages response: " + JSON.stringify(response));
       });
     }
+  });
+}
+
+function sayImages() {
+  var text = new SpeechSynthesisUtterance("The images on the page include: " + description);
+  synth.speak(text);
+  chrome.runtime.sendMessage({"actions" : "sayImages"}, function (response) {
+      console.log("sayImages response: " + JSON.stringify(response));
   });
 }
 
