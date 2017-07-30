@@ -30,4 +30,18 @@ Luna is trained using [api.ai](https://api.ai/), so she can process commands in 
 # Debugging
 If you're having trouble getting Luna set up, click on "background page" underneath Luna in [chrome://extensions](chrome://extensions). Send us an email at ajng@princeton.edu with your logs if you're having trouble and we'll try to get you set up!
 
+# Bugs that we know of
+* Luna doesn't work out of the box (i.e, on the extension page or a regular new tab page. You have to go to a site first.)
+* Closing a tab only works with tabs created after Luna has been initialized
+* Commands only work on pages where JavaScript is enabled
+* Clicking the extension button again breaks Luna
+
+# Improvements
+* An easy way to turn on and turn off Luna (binding an action to pressing the extension button)
+* Indication that Luna is working after you click the button
+* Identifying text boxes for typing and typing in said boxes
+* New extension icon
+* Clean up the code (lol)
+* Scrolling ends up stopping a bit further than the user intended
+
 For more info, visit our [Devpost page](http://devpost.com/software/lucy).

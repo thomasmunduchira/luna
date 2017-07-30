@@ -1,8 +1,6 @@
-
 var data;
 var image;
 var timer;
-var userID;
 var height;
 var linkNumber;
 var synth = window.speechSynthesis;
@@ -12,7 +10,6 @@ chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
     console.log("DATA: " + request.data);
     data = request.data;
-    userID = request.userID;
     if (typeof request.height !== "undefined"){
       height = request.height;
       console.log("height is: " + height);
@@ -39,7 +36,7 @@ var intentFuncMap = {
 function scrollUp() {
   console.log("I'm trying to scroll up");
   window.scrollBy(window.scrollY, -height/2);
-  chrome.runtime.sendMessage({"actions" : "scrollUp", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "scrollUp"}, function (response) {
       console.log("scrollUp response: " + response);
   });
 }
@@ -47,7 +44,7 @@ function scrollUp() {
 function scrollUpFull() {
   console.log("I'm trying to scroll up full");
   window.scrollTo(window.scrollY, 0);
-  chrome.runtime.sendMessage({"actions" : "scrollUpFull", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "scrollUpFull"}, function (response) {
       console.log("scrollUpFull response: " + response);
   });
 }
@@ -55,7 +52,7 @@ function scrollUpFull() {
 function scrollDown() {
   console.log("I'm trying to scroll down");
   window.scrollBy(window.scrollY, height/2);
-  chrome.runtime.sendMessage({"actions" : "scrollDown", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "scrollDown"}, function (response) {
       console.log("scrollDown response: " + response);
       console.log("sD new position: " + window.scrollY);
   });
@@ -64,7 +61,7 @@ function scrollDown() {
 function scrollDownFull() {
   console.log("I'm trying to scroll down full");
   window.scrollTo(window.scrollY, document.body.scrollHeight);
-  chrome.runtime.sendMessage({"actions" : "scrollDownFull", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "scrollDownFull"}, function (response) {
       console.log("scrollDownFull response: " + response);
       console.log("sDF new position: " + window.scrollY);
   });
@@ -73,7 +70,7 @@ function scrollDownFull() {
 function goBack() {
   console.log("I'm trying to go back");
   window.history.back();
-  chrome.runtime.sendMessage({"actions" : "goBack", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "goBack"}, function (response) {
       console.log("goBack response: " + response);
   });
 }
@@ -81,7 +78,7 @@ function goBack() {
 function goForward() {
   console.log("I'm trying to go forward");
   window.history.forward();
-  chrome.runtime.sendMessage({"actions" : "goForward", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "goForward"}, function (response) {
       console.log("goForward response: " + response);
   });
 }
@@ -96,7 +93,7 @@ function showLinks() {
     links[i].innerHTML = "<mark>Link " + i + ":</mark> " + links[i].innerHTML;
     links[i].setAttribute("id", i);
   }
-  chrome.runtime.sendMessage({"actions" : "showLinks", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "showLinks"}, function (response) {
       console.log("showLinks response: " + response);
   });
 }
@@ -106,7 +103,7 @@ function openLink() {
   var link = document.getElementById(linkNumber);
   console.log(JSON.stringify(link));
   window.location.href = link;
-  chrome.runtime.sendMessage({"actions" : "openLink", "userID" : userID}, function (response) {
+  chrome.runtime.sendMessage({"actions" : "openLink"}, function (response) {
       console.log("openLink response: " + JSON.stringify(response));
   });
 }
