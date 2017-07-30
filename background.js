@@ -29,21 +29,21 @@ localStorage.setItem("isGetUserMediaInitialized", "false");
 // global default state of whether Google Vocie API's Voice-To-Text is working
 var recognizing = false;
 
-// global default state of whether Luna has been called
+// global default state of whether Zoe has been called
 var isListeningForQueryActivated = false;
 
-// times how long since Luna has been activated
-var timeSinceLunaActivatedTimer;
+// times how long since Zoe has been activated
+var timeSinceZoeActivatedTimer;
 
-// global variables for keeping track of the animated Luna icon
-var minLunaIconFrame = 0;
-var maxLunaIconFrame = 5;
-var currentLunaIconFrame = minLunaIconFrame;
-var keepAnimatingLunaIcon = false;
+// global variables for keeping track of the animated Zoe icon
+var minZoeIconFrame = 0;
+var maxZoeIconFrame = 5;
+var currentZoeIconFrame = minZoeIconFrame;
+var keepAnimatingZoeIcon = false;
 
-// toggle Luna on/off by clicking Chrome icon
+// toggle Zoe on/off by clicking Chrome icon
 chrome.browserAction.onClicked.addListener(function() {
-  // turn on Luna
+  // turn on Zoe
   if (!recognizing) {
     // initialize getUserMedia if not yet approved by user
     if (!JSON.parse(localStorage.getItem("isGetUserMediaInitialized"))) {
@@ -88,22 +88,22 @@ if ('webkitSpeechRecognition' in window) {
           var latestString = event.results[i][0].transcript;
           console.log(latestString);
 
-          // this prevents Luna from listening to it's own verbal warnings
+          // this prevents Zoe from listening to it's own verbal warnings
           if (latestString == "sorry I don't understand that request") {
             break;
           }
 
-          // check if latest string includes call to "Okay Luna"
-          if (isOkayLunaCalled(latestString)) {
+          // check if latest string includes call to "Okay Zoe"
+          if (isOkayZoeCalled(latestString)) {
             startListeningForQuery();
           } else if (isListeningForQueryActivated) { // if listening for query
-            // listen for new queries without "Hello Luna" prompt for 9 seconds
-            // timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 4000);
+            // listen for new queries without "Hello Zoe" prompt for 9 seconds
+            // timeSinceZoeActivatedTimer = setTimeout(stopListeningForQuery, 4000);
 
             // if a non-null string exists for the query, get the intent
             if (latestString) {
               getIntent(latestString);
-              clearTimeout(timeSinceLunaActivatedTimer);
+              clearTimeout(timeSinceZoeActivatedTimer);
               stopListeningForQuery();
             }
           }
@@ -172,62 +172,62 @@ function initializeGetUserMedia() {
   });
 }
 
-// check latestString if "Okay Luna" call exists
-function isOkayLunaCalled(latestString) {
-  // possible variations of "Okay Luna" and cooresponding regex
+// check latestString if "Okay Zoe" call exists
+function isOkayZoeCalled(latestString) {
+  // possible variations of "Okay Zoe" and cooresponding regex
   // regex note: "i" tag allows for case invariant search
-  okayLunaVariation = [
-    /Luna/i,
-    /Okay Luna/i,
-    /It\'s okay Luna/i,
-    /Okay Luna/i,
-    /Okay Luna\'s/i,
+  okayZoeVariation = [
+    /Zoe/i,
+    /Okay Zoe/i,
+    /It\'s okay Zoe/i,
+    /Okay Zoe/i,
+    /Okay Zoe\'s/i,
   ]
 
-  // check if "Okay Luna" or a similar variation called
-  for (var i = 0; i < okayLunaVariation.length; i++) {
-    if (okayLunaVariation[i].test(latestString)) {
-      // "Okay Luna" called
+  // check if "Okay Zoe" or a similar variation called
+  for (var i = 0; i < okayZoeVariation.length; i++) {
+    if (okayZoeVariation[i].test(latestString)) {
+      // "Okay Zoe" called
       return true;
     }
   }
 
-  // "Okay Luna" and its variation not found
+  // "Okay Zoe" and its variation not found
   return false;
 }
 
-// Given that "Okay Luna" has been called, start listening for query
+// Given that "Okay Zoe" has been called, start listening for query
 function startListeningForQuery() {
-  // trigger audio since Luna called
+  // trigger audio since Zoe called
   var beepOn = new Audio('audio/beep_short_on.wav');
   beepOn.play();
 
-  // start animating Luna icon to indiate
-  keepAnimatingLunaIcon = true;
+  // start animating Zoe icon to indiate
+  keepAnimatingZoeIcon = true;
   if (!isListeningForQueryActivated) {
-    animateLunaIcon();
+    animateZoeIcon();
   }
 
-  // after 6 seconds, Luna will be deactivated unless a user says a query
-  clearTimeout(timeSinceLunaActivatedTimer);
-  timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 6000);
+  // after 6 seconds, Zoe will be deactivated unless a user says a query
+  clearTimeout(timeSinceZoeActivatedTimer);
+  timeSinceZoeActivatedTimer = setTimeout(stopListeningForQuery, 6000);
 
-  // Okay Luna has been called!
+  // Okay Zoe has been called!
   isListeningForQueryActivated = true;
 }
 
-// animate the Luna icon frame by frame
-function animateLunaIcon() {
-  if (keepAnimatingLunaIcon) {
+// animate the Zoe icon frame by frame
+function animateZoeIcon() {
+  if (keepAnimatingZoeIcon) {
     chrome.browserAction.setIcon({
-      path: "images/mic-animated-" + currentLunaIconFrame + ".png"
+      path: "images/mic-animated-" + currentZoeIconFrame + ".png"
     });
-    if (currentLunaIconFrame++ >= maxLunaIconFrame) {
-      currentLunaIconFrame = minLunaIconFrame;
+    if (currentZoeIconFrame++ >= maxZoeIconFrame) {
+      currentZoeIconFrame = minZoeIconFrame;
     }
 
     // switch to next frame of icon every .2 seconds
-    window.setTimeout(animateLunaIcon, 200);
+    window.setTimeout(animateZoeIcon, 200);
   }
 }
 
@@ -236,12 +236,12 @@ function stopListeningForQuery() {
   // deactvate query listening state
   isListeningForQueryActivated = false;
 
-  // trigger audio to indicate Luna no longer registering the query
+  // trigger audio to indicate Zoe no longer registering the query
   var beepOff = new Audio('audio/beep_short_off.wav');
   beepOff.play();
 
-  // trigger the icon indicating Luna is listening
-  keepAnimatingLunaIcon = false;
+  // trigger the icon indicating Zoe is listening
+  keepAnimatingZoeIcon = false;
   chrome.browserAction.setIcon({
     path: 'images/mic.png'
   })
@@ -256,32 +256,32 @@ function startVoiceToText() {
     return;
   }
 
-  // enable Luna to start listening
+  // enable Zoe to start listening
   recognition.start();
 
   // set global variable tracking whether VoceToText is working
   recognizing = true;
 
-  // trigger the icon indicating Luna is listening
-  keepAnimatingLunaIcon = false;
+  // trigger the icon indicating Zoe is listening
+  keepAnimatingZoeIcon = false;
   chrome.browserAction.setIcon({
     path: 'images/mic.png'
   })
 }
 
-// turn off Voice-To-Text, along with Luna
+// turn off Voice-To-Text, along with Zoe
 function stopVoiceToText() {
   // set global variable tracking whether VoceToText is working
   recognizing = false;
 
-  // trigger the icon indicating Luna is not listening
-  keepAnimatingLunaIcon = false;
+  // trigger the icon indicating Zoe is not listening
+  keepAnimatingZoeIcon = false;
   chrome.browserAction.setIcon({
     path: 'images/mic-slash.png'
   });
 
   // stop listening for query and reset query timer
-  clearTimeout(timeSinceLunaActivatedTimer);
+  clearTimeout(timeSinceZoeActivatedTimer);
   isListeningForQueryActivated = false;
 
   // stop the Voice-To-Text functionality
@@ -450,11 +450,11 @@ function processActions(data, callback) {
         }, function(tabs) {
           var title = tabs[0].title;
           var url = tabs[0].url;
-          chrome.bookmarks.search("Luna", function(results) {
+          chrome.bookmarks.search("Zoe", function(results) {
             if (!results.length) {
               chrome.bookmarks.create({
                 "parentId": "1",
-                "title": "Luna"
+                "title": "Zoe"
               },
               function(newFolder) {
                 console.log("added folder: " + newFolder.title);
