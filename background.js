@@ -288,8 +288,344 @@ function stopVoiceToText() {
   recognition.stop();
 }
 
-// call API.AI to get the intent of the query
-function getIntent(query) {
+function multipleActions(actions, index, callback) {
+  var action = actions[index];
+  var data = {};
+  data.result = {};
+  data.result.action = action;
+  data.result.parameters = {};
+  
+  processActions(data, function() {
+    if (index === actions.length - 1) {
+      if (callback) {
+        return callback();
+      }
+    } else {
+      return multipleActions(actions, index + 1, callback);
+    }
+  });
+}
+
+function processActions(data, callback) {
+  console.log("data: " + JSON.stringify(data));
+
+  // verbally notify the user if the intent is invalid
+  if (data.result.action == undefined) {
+    chrome.tts.getVoices(function(voices) {
+      chrome.tts.speak("Sorry, I don't understand that request.", {
+        'voiceName': 'Google UK English Female'
+      });
+      if (callback) {
+        return callback();
+      }
+    });
+  } else {
+    switch (data.result.action) {
+      case "combo_actions":
+        var number = data.result.parameters.number || 100;
+        //check if number in firebase
+        if () {
+
+        } else {
+          //save firebase
+        }
+        return multipleActions(actions, index, function() {
+          if (callback) {
+            return callback();
+          }
+        });
+
+      case "new_tab":
+        chrome.tabs.create({
+          url: "http://google.com"
+        }, function(tab) {
+          console.log("new_tab request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "close_tab":
+        chrome.tabs.query({
+          currentWindow: true,
+          active: true
+        }, function(tabs) {
+          chrome.tabs.remove(tabs[0].id);
+          console.log("close_tab request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      // case "google_search":
+      //   var gUrl = "http://google.com/#q=" + data.result.parameters.any.split(" ").join("+");
+      //   chrome.tabs.create({
+      //     url: gUrl
+      //   }, function(tab) {
+      //     console.log("google_search request completed!");
+      //   });
+      //   break;
+
+      case "stackoverflow_search":
+        var query = data.result.parameters.any || "code";
+        var soUrl = "https://stackoverflow.com/search?q=" + query.split(" ").join("+");
+        chrome.tabs.create({
+          url: soUrl
+        }, function(tab) {
+          console.log("stackoverflow_search request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "youtube_search":
+        var query = data.result.parameters.any || "cat";
+        var yUrl = "https://www.youtube.com/results?search_query=" + query.split(" ").join("+");
+        chrome.tabs.create({
+          url: yUrl
+        }, function(tab) {
+          console.log("youtube_search request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "zoom":
+        chrome.tabs.query({
+          currentWindow: true,
+          active: true
+        }, function(tabs) {
+          chrome.tabs.getZoom(tabs[0].id, function(zoomFactor) {
+            var zoomType = data.result.parameters.zoomType || "reset";
+            if (zoomType == "reset" || (zoomType == "out" && (zoomFactor - 0.25) <= 0)) {
+              zoomChange = 1.0;
+              console.log("zoomChange reset to 1.0 aka 100%");
+            } else {
+              var zoomChange = zoomType == "in" ? 0.25 + zoomFactor : zoomFactor - 0.25;
+            }
+            console.log("zoomType is: " + zoomType);
+            console.log("changing from " + zoomFactor + " --> " + zoomChange);
+            chrome.tabs.setZoom(tabs[0].id, zoomChange, function() {
+              console.log("done zooming now!!!");
+              if (callback) {
+                return callback();
+              }
+            });
+          });
+        });
+        break;
+
+      case "website_search":
+
+        var url = data.result.parameters.url || "https://google.com";
+        var websiteUrl = !url.includes("http") ? "http://" + url : url;
+        if (websiteUrl.includes("..")) {
+          websiteUrl = websiteUrl.replace("..", ".");
+        }
+        chrome.tabs.create({
+          url: websiteUrl
+        }, function(tab) {
+          console.log("website_search request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "create_bookmark":
+        console.log("in bookmark spot!!!");
+        chrome.tabs.query({
+          currentWindow: true,
+          active: true
+        }, function(tabs) {
+          var title = tabs[0].title;
+          var url = tabs[0].url;
+          chrome.bookmarks.search("Luna", function(results) {
+            if (!results.length) {
+              chrome.bookmarks.create({
+                "parentId": "1",
+                "title": "Luna"
+              },
+              function(newFolder) {
+                console.log("added folder: " + newFolder.title);
+                addUrlToBookmarks(newFolder.id, title, url);
+                if (callback) {
+                  return callback();
+                }
+              });
+            } else {
+              console.log("bookmark results: " + JSON.stringify(results));
+              console.log("Found bookmark folder!!! " + results[0].id);
+              addUrlToBookmarks(results[0].id, title, url);
+              if (callback) {
+                return callback();
+              }
+            }
+          });
+        });
+        break;
+
+      case "reload_page":
+        chrome.tabs.query({
+          lastFocusedWindow: true,
+          active: true
+        }, function(tabs) {
+          chrome.tabs.reload(tabs[0].id, {
+            bypassCache: true
+          }, function() {
+            console.log("reload_page request completed!");
+            if (callback) {
+              return callback();
+            }
+          });
+        });
+        break;
+
+      case "close_window":
+        var windowType = data.result.parameters.windowType || "current";
+        if (windowType == "current") {
+          chrome.windows.getLastFocused(function(window) {
+            chrome.windows.remove(window.id, function() {
+              console.log("close_window request completed! (single window)");
+              if (callback) {
+                return callback();
+              }
+            });
+          });
+        }
+        break;
+
+      case "remove_links":
+        chrome.tabs.query({
+          lastFocusedWindow: true,
+          active: true
+        }, function(tabs) {
+          chrome.tabs.reload(tabs[0].id, {
+            bypassCache: false
+          }, function() {
+            console.log("remove_links request completed!");
+            if (callback) {
+              return callback();
+            }
+          });
+        });
+        break;
+
+      case "restore_window":
+        chrome.sessions.restore(function(restoredSession) {
+          console.log("restore_window request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "mute_tab": //new
+        chrome.tabs.query({
+          lastFocusedWindow: true,
+          active: true
+        }, function(tabs) {
+          chrome.tabs.update(tabs[0].id, {
+            muted: true
+          }, function() {
+            console.log("mute_tab request completed!");
+            if (callback) {
+              return callback();
+            }
+          });
+        });
+        break;
+
+      case "more_sitessearch":
+        var site = data.result.parameters.popSites || "google";
+        var query = data.result.parameters.any || "cats";
+        var url = "";
+        switch (site){
+          case "quora":
+            url = "https://www.quora.com/search?q=" + query;
+            break;
+          case "amazon":
+            url = "https://www.amazon.com/s/field-keywords" + query;
+            break;
+          case "facebook":
+            url = "https://www.facebook.com/search/top/?q=" + query;
+            break;
+          case "twitter":
+            url = "https://twitter.com/search?q=" + query;
+            break;
+          case "google":
+            url = "http://google.com/#q=" + query;
+          default:
+            //we screwed
+        }
+        chrome.tabs.create({
+          url: url
+        }, function(tab) {
+          console.log("more_sitessearch request completed!");
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      case "selective_tabclose":
+        chrome.tabs.query({
+          lastFocusedWindow: true,
+        }, function(tabs) {
+          var i;
+          var url = data.result.parameters.url || "google.com";
+          for (i = 0; i < tabs.length; i++) {
+            console.log("tab: " + JSON.stringify(tabs[i]));
+            if (tabs[i].url.includes(url)){
+              chrome.tabs.remove(tabs[i].id);
+            }
+          }
+          if (callback) {
+            return callback();
+          }
+        });
+        break;
+
+      default:
+        chrome.tabs.query({
+          currentWindow: true,
+          active: true
+        }, function(tabs) {
+          var params = {
+            data: data.result.action
+          };
+          if (tabs[0].height !== undefined) {
+            params.height = tabs[0].height || 700;
+          }
+          if (data.result.action == "open_link") {
+            params.linkNumber = data.result.parameters.link_number || 0;
+          }
+          if (data.result.action == "type_textboxes") {
+            params.boxNumber = data.result.parameters.number || 0;
+            params.boxValue = data.result.parameters.any || "text";
+          }
+          if (data.result.action == "youtube_assist") {
+            params.youtubeStatus = data.result.parameters.youtubeStatus || "play";
+            params.videoPos = data.result.parameters.videoPos || 0;
+          }
+          chrome.tabs.sendMessage(tabs[0].id, params, function(response) {
+            console.log("response: " + JSON.stringify(response));
+            if (callback) {
+              return callback();
+            }
+          });
+        });
+    }
+    //---
+  }
+}
+
+// call API.AI to get the intent osf the query
+function getIntent(query, callback) {
   // asynchronously query the API.AI api server
   $.ajax({
     method: "POST",
@@ -306,243 +642,7 @@ function getIntent(query) {
     }),
     // on success, the api answer is captured in the data variable
     // execute functions in action.js depending on the intent
-    success: function(data) {
-      console.log("data: " + JSON.stringify(data));
-
-      // verbally notify the user if the intent is invalid
-      if (data.result.action == undefined) {
-        chrome.tts.getVoices(function(voices) {
-          chrome.tts.speak("Sorry, I don't understand that request.", {
-            'voiceName': 'Google UK English Female'
-          });
-        });
-      } else {
-        switch (data.result.action) {
-          case "new_tab":
-            chrome.tabs.create({
-              url: "http://google.com"
-            }, function(tab) {
-              console.log("new_tab request completed!");
-            });
-            break;
-
-          case "close_tab":
-            chrome.tabs.query({
-              currentWindow: true,
-              active: true
-            }, function(tabs) {
-              chrome.tabs.remove(tabs[0].id);
-              console.log("close_tab request completed!");
-            });
-            break;
-
-          case "stackoverflow_search":
-            var soUrl = "https://stackoverflow.com/search?q=" + data.result.parameters.any.split(" ").join("+");
-            chrome.tabs.create({
-              url: soUrl
-            }, function(tab) {
-              console.log("stackoverflow_search request completed!");
-            });
-            break;
-
-          case "youtube_search":
-            var yUrl = "https://www.youtube.com/results?search_query=" + data.result.parameters.any.split(" ").join("+");
-            chrome.tabs.create({
-              url: yUrl
-            }, function(tab) {
-              console.log("youtube_search request completed!");
-            });
-            break;
-
-          case "zoom":
-            chrome.tabs.query({
-              currentWindow: true,
-              active: true
-            }, function(tabs) {
-              chrome.tabs.getZoom(tabs[0].id, function(zoomFactor) {
-                var zoomType = data.result.parameters.zoomType;
-                if (zoomType == "reset" || (zoomType == "out" && (zoomFactor - 0.25) <= 0)) {
-                  zoomChange = 1.0;
-                  console.log("zoomChange reset to 1.0 aka 100%");
-                } else {
-                  var zoomChange = zoomType == "in" ? 0.25 + zoomFactor : zoomFactor - 0.25;
-                }
-                console.log("zoomType is: " + zoomType);
-                console.log("changing from " + zoomFactor + " --> " + zoomChange);
-                chrome.tabs.setZoom(tabs[0].id, zoomChange, function() {
-                  console.log("done zooming now!!!");
-                });
-              });
-            });
-            break;
-
-          case "website_search":
-            var websiteUrl = !data.result.parameters.url.includes("http") ? "http://" + data.result.parameters.url : data.result.parameters.url;
-            if (websiteUrl.includes("..")) {
-              websiteUrl = websiteUrl.replace("..", ".");
-            }
-            chrome.tabs.create({
-              url: websiteUrl
-            }, function(tab) {
-              console.log("website_search request completed!");
-            });
-            break;
-
-          case "create_bookmark":
-            console.log("in bookmark spot!!!");
-            chrome.tabs.query({
-              currentWindow: true,
-              active: true
-            }, function(tabs) {
-              var title = tabs[0].title;
-              var url = tabs[0].url;
-              chrome.bookmarks.search("Luna", function(results) {
-                if (!results.length) {
-                  chrome.bookmarks.create({
-                    "parentId": "1",
-                    "title": "Luna"
-                  },
-                  function(newFolder) {
-                    console.log("added folder: " + newFolder.title);
-                    addUrlToBookmarks(newFolder.id, title, url);
-                  });
-                } else {
-                  console.log("bookmark results: " + JSON.stringify(results));
-                  console.log("Found bookmark folder!!! " + results[0].id);
-                  addUrlToBookmarks(results[0].id, title, url);
-                }
-              });
-            });
-            break;
-
-          case "reload_page":
-            chrome.tabs.query({
-              lastFocusedWindow: true,
-              active: true
-            }, function(tabs) {
-              chrome.tabs.reload(tabs[0].id, {
-                bypassCache: true
-              }, function() {
-                console.log("reload_page request completed!");
-              });
-            });
-            break;
-
-          case "close_window":
-            if (data.result.parameters.windowType == "current") {
-              chrome.windows.getLastFocused(function(window) {
-                chrome.windows.remove(window.id, function() {
-                  console.log("close_window request completed! (single window)");
-                });
-              });
-            }
-            break;
-
-          case "remove_links":
-            chrome.tabs.query({
-              lastFocusedWindow: true,
-              active: true
-            }, function(tabs) {
-              chrome.tabs.reload(tabs[0].id, {
-                bypassCache: false
-              }, function() {
-                console.log("remove_links request completed!");
-              });
-            });
-            break;
-
-          case "restore_window":
-            chrome.sessions.restore(function(restoredSession) {
-              console.log("restore_window request completed!");
-            });
-            break;
-
-          case "mute_tab": //new
-            chrome.tabs.query({
-              lastFocusedWindow: true,
-              active: true
-            }, function(tabs) {
-              chrome.tabs.update(tabs[0].id, {
-                muted: true
-              }, function() {
-                console.log("mute_tab request completed!");
-              });
-            });
-            break;
-
-          case "more_sitessearch":
-            var site = data.result.parameters.popSites;
-            var query = data.result.parameters.any;
-            var url = "";
-            switch(site){
-              case "quora":
-                url = "https://www.quora.com/search?q="+query;
-                break;
-              case "amazon":
-                url = "https://www.amazon.com/s/field-keywords"+query;
-                break;
-              case "facebook":
-                url = "https://www.facebook.com/search/top/?q="+query;
-                break;
-              case "twitter":
-                url = "https://twitter.com/search?q="+query;
-                break;
-              case "google":
-                url = "http://google.com/#q=" + query;
-              default:
-                //we screwed
-            }
-            chrome.tabs.create({
-              url: url
-            }, function(tab) {
-              console.log("more_sitessearch request completed!");
-            });
-            break;
-
-          case "selective_tabclose":
-            chrome.tabs.query({
-              lastFocusedWindow: true,
-            }, function(tabs) {
-              var i;
-              for(i = 0; i < tabs.length; i++){
-                console.log("tab: " + JSON.stringify(tabs[i]));
-                  if(tabs[i].url.includes(data.result.parameters.url)){
-                    chrome.tabs.remove(tabs[i].id);
-                  }
-                }
-            });
-            break;
-
-          default:
-            chrome.tabs.query({
-              currentWindow: true,
-              active: true
-            }, function(tabs) {
-              var params = {
-                data: data.result.action
-              };
-              if (tabs[0].height !== undefined) {
-                params.height = tabs[0].height;
-              }
-              if (data.result.action == "open_link") {
-                params.linkNumber = data.result.parameters.link_number;
-              }
-              if (data.result.action == "type_textboxes") {
-                params.boxNumber = data.result.parameters.number;
-                params.boxValue = data.result.parameters.any;
-              }
-              if (data.result.action == "youtube_assist") {
-                params.youtubeStatus = data.result.parameters.youtubeStatus;
-                params.videoPos = data.result.parameters.videoPos;
-              }
-              chrome.tabs.sendMessage(tabs[0].id, params, function(response) {
-                console.log("response: " + JSON.stringify(response));
-              });
-            });
-        }
-        //---
-      }
-    },
+    success: processActions,
     error: function() {
       return "Internal Server Error";
     }
