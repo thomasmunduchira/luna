@@ -7,7 +7,8 @@ var config = {
   messagingSenderId: "768281558423"
 };
 firebase.initializeApp(config);
-firebase.database().ref("/imgInfo").on("value", function (s) {
+firebase.database().ref("imgInfo").on("value", function (s) {
+  console.log("s: "+JSON.stringify(s));
   var params = {
     data: "say_images",
     description: s.val().images
