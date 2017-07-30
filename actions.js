@@ -143,6 +143,7 @@ function showTextboxes() {
   for (var i = 0; i < boxes.length; i++) {
     console.log("box " + i + " on page: " + boxes[i]);
     boxes[i].value = "Box " + i + " :::: " + boxes[i].value;
+    boxes[i].style.backgroundColor = "yellow";
     boxes[i].className += " chromeControlBoxSelected-" + i;
   }
   chrome.runtime.sendMessage({"actions" : "showTextboxes"}, function (response) {

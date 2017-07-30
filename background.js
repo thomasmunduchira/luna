@@ -290,12 +290,9 @@ function stopVoiceToText() {
 
 function multipleActions(actions, index, callback) {
   var action = actions[index];
-  var data = {};
-  data.result = {};
-  data.result.action = action;
-  data.result.parameters = {};
+  console.log(action);
 
-  processActions(data, function() {
+  getIntent(action, function() {
     if (index === actions.length - 1) {
       if (callback) {
         return callback();
@@ -322,24 +319,35 @@ function processActions(data, callback) {
   } else {
     switch (data.result.action) {
       case "combo_actions":
-        var number = data.result.parameters.number || 100;
-          firebase.database().ref("orders").once("value").then(function(s) {
-            // s.val()["-1"] this is how you access indiv order #s & associated arrays
-              //  "orders" : {
-            //   "-1" : [ "action1", "action2", "action3" ]
-            // }
-          });
-        if () {
-
-        } else {
-          //save firebase
-          firebase.database().ref("orders").update(PUT JOSN HERE);
-        }
-        return multipleActions(actions, index, function() {
-          if (callback) {
-            return callback();
-          }
+        var number = data.result.parameters.number.toString() || (100).toString();
+        firebase.database().ref("orders").once("value")
+          .then(function(s) {
+            console.log('yo', s.val());
+            var actions;
+            if (s.val()[number]) {
+              actions = s.val()[number];
+            } else {
+              actions = [];
+              if (data.result.parameters.intentsList) {
+                actions.push(data.result.parameters.intentsList);
+              }
+              if (data.result.parameters.intentsList1) {
+                actions.push(data.result.parameters.intentsList1);
+              }
+              if (data.result.parameters.intentsList2) {
+                actions.push(data.result.parameters.intentsList2);
+              }
+              var obj = {};
+              obj[number] = actions;
+              firebase.database().ref("orders").update(obj);
+            }
+            return multipleActions(actions, 0, function() {
+              if (callback) {
+                return callback();
+              }
+            });
         });
+        break;
 
       case "new_tab":
         chrome.tabs.create({
@@ -406,7 +414,7 @@ function processActions(data, callback) {
           active: true
         }, function(tabs) {
           chrome.tabs.getZoom(tabs[0].id, function(zoomFactor) {
-            var zoomType = data.result.parameters.zoomType || "reset";
+            var zoomType = data.result.parameters.zoom || "unknown";
             if (zoomType == "reset" || (zoomType == "out" && (zoomFactor - 0.25) <= 0)) {
               zoomChange = 1.0;
               console.log("zoomChange reset to 1.0 aka 100%");
@@ -632,6 +640,7 @@ function processActions(data, callback) {
 
 // call API.AI to get the intent osf the query
 function getIntent(query, callback) {
+  console.log('hello', query);
   // asynchronously query the API.AI api server
   $.ajax({
     method: "POST",
@@ -648,7 +657,9 @@ function getIntent(query, callback) {
     }),
     // on success, the api answer is captured in the data variable
     // execute functions in action.js depending on the intent
-    success: processActions,
+    success: function(data) {
+      return processActions(data, callback);
+    },
     error: function() {
       return "Internal Server Error";
     }
