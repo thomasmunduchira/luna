@@ -7,7 +7,7 @@ var config = {
   messagingSenderId: "768281558423"
 };
 firebase.initializeApp(config);
-firebase.database().ref().on("value", function (s) {
+firebase.database().ref("/imgInfo").on("value", function (s) {
   var params = {
     data: "say_images",
     description: s.val().images
@@ -334,15 +334,6 @@ function getIntent(query) {
               console.log("close_tab request completed!");
             });
             break;
-
-          // case "google_search":
-          //   var gUrl = "http://google.com/#q=" + data.result.parameters.any.split(" ").join("+");
-          //   chrome.tabs.create({
-          //     url: gUrl
-          //   }, function(tab) {
-          //     console.log("google_search request completed!");
-          //   });
-          //   break;
 
           case "stackoverflow_search":
             var soUrl = "https://stackoverflow.com/search?q=" + data.result.parameters.any.split(" ").join("+");
