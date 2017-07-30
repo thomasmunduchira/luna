@@ -73,12 +73,12 @@ if ('webkitSpeechRecognition' in window) {
             startListeningForQuery();
           } else if (isListeningForQueryActivated) { // if listening for query
             // listen for new queries without "Hello Luna" prompt for 9 seconds
-            clearTimeout(timeSinceLunaActivatedTimer);
             // timeSinceLunaActivatedTimer = setTimeout(stopListeningForQuery, 4000);
 
             // if a non-null string exists for the query, get the intent
             if (latestString) {
               getIntent(latestString);
+              clearTimeout(timeSinceLunaActivatedTimer);
               stopListeningForQuery();
             }
           }
@@ -432,12 +432,6 @@ function getIntent(query) {
               }, function() {
                 console.log("remove_links request completed!");
               });
-            });
-            break;
-
-          case "restore_window":
-            chrome.sessions.restore(function(restoredSession) {
-              console.log("restore_window request completed!");
             });
             break;
 
