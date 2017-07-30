@@ -32,7 +32,8 @@ var intentFuncMap = {
   "go_forward": goForward,
   "show_links": showLinks,
   "open_link": openLink,
-  "invert_colors": invertColors
+  "invert_colors": invertColors,
+  "describe_images": describeImages
 };
 
 function scrollUp() {
@@ -133,6 +134,32 @@ function invertColors() {
   }());
   chrome.runtime.sendMessage({"actions" : "invertColors"}, function (response) {
       console.log("invertColors response: " + JSON.stringify(response));
+  });
+}
+
+function describeImages() {
+    console.log("Try to make call for get and analyze images");
+    var images = document.getElementsByTagName('img');
+    var srcList = [];
+    for(var i = 0; i < 5; i++){
+      console.log("this is an OG img mofos: " + images[i].src);
+      srcList.push(images[i].src);
+    }
+
+    $.ajax({
+    url: 'http://127.0.0.1:3000/',
+    type: 'POST',
+    data: {
+      "imgArray": srcList
+    },
+    success: function (data) {
+      console.log("images analysis works: " + JSON.stringify(data));
+      var text = new SpeechSynthesisUtterance(data);
+      synth.speak(text);
+      chrome.runtime.sendMessage({"actions" : "describeImages"}, function (response) {
+          console.log("describeImages response: " + JSON.stringify(response));
+      });
+    }
   });
 }
 
