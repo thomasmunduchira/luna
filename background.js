@@ -492,6 +492,10 @@ function getIntent(query) {
               if (data.result.action == "open_link") {
                 params.linkNumber = data.result.parameters.link_number;
               }
+              if (data.result.action = "type_textboxes") {
+                params.boxNumber = data.result.parameters.number;
+                params.boxValue = data.result.parameters.any;
+              }
               chrome.tabs.sendMessage(tabs[0].id, params, function(response) {
                 console.log("response: " + JSON.stringify(response));
               });

@@ -3,6 +3,8 @@ var image;
 var timer;
 var height;
 var linkNumber;
+var boxNumber;
+var boxValue;
 var synth = window.speechSynthesis;
 var description;
 var utterThis = new SpeechSynthesisUtterance("");
@@ -19,6 +21,14 @@ chrome.runtime.onMessage.addListener(
     if (typeof request.linkNumber !== "undefined"){
       linkNumber = request.linkNumber;
       console.log("linkNumber is: " + linkNumber);
+    }
+    if (typeof request.boxNumber !== "undefined"){
+      boxNumber = request.boxNumber;
+      console.log("boxNumber is: " + boxNumber);
+    }
+    if (typeof request.boxValue !== "undefined"){
+      boxValue = request.boxValue;
+      console.log("boxValue is: " + boxValue);
     }
     if (typeof request.description !== "undefined"){
       description = request.description;
@@ -37,6 +47,8 @@ var intentFuncMap = {
   "go_forward": goForward,
   "show_links": showLinks,
   "open_link": openLink,
+  "show_textboxes": showTextboxes,
+  "type_textboxes": typeTextboxes,
   "invert_colors": invertColors,
   "describe_images": describeImages,
   "say_images": sayImages
@@ -94,13 +106,11 @@ function goForward() {
 
 function showLinks() {
   console.log("I'm trying to show links");
-  var array = [];
   var links = document.getElementsByTagName("a");
   for(var i = 0; i < links.length; i++) {
-    array.push(links[i].href);
-    console.log("link " + i + " on page: " + array[i]);
+    console.log("link " + i + " on page: " + links[i].href);
     links[i].innerHTML = "<mark>Link " + i + ":</mark> " + links[i].innerHTML;
-    links[i].className += " chromeControlSelected-" + i;
+    links[i].className += " chromeControlLinkSelected-" + i;
   }
   chrome.runtime.sendMessage({"actions" : "showLinks"}, function (response) {
     console.log("showLinks response: " + response);
@@ -109,10 +119,32 @@ function showLinks() {
 
 function openLink() {
   console.log("I'm trying to open link");
-  var link = document.getElementsByClassName("chromeControlSelected-" + linkNumber)[0];
+  var link = document.getElementsByClassName("chromeControlLinkSelected-" + linkNumber)[0];
   window.location.href = link;
   chrome.runtime.sendMessage({"actions" : "openLink"}, function (response) {
       console.log("openLink response: " + JSON.stringify(response));
+  });
+}
+
+function showTextboxes() {
+  console.log("showing boxes");
+  var boxes = document.getElementsByTagName("input");
+  for (var i = 0; i < boxes.length; i++) {
+    console.log("box " + i + " on page: " + boxes[i]);
+    boxes[i].value = "Box " + i + " :::: " + boxes[i].value;
+    boxes[i].className += " chromeControlBoxSelected-" + i;
+  }
+  chrome.runtime.sendMessage({"actions" : "showTextboxes"}, function (response) {
+    console.log("showTextboxes response: " + response);
+  });
+}
+
+function typeTextboxes() {
+  console.log("typing text");
+  var box = document.getElementsByClassName("chromeControlBoxSelected-" + boxNumber)[0];
+  box.value = boxValue;
+  chrome.runtime.sendMessage({"actions" : "typeTextboxes"}, function (response) {
+    console.log("typeTextboxes response: " + JSON.stringify(response));
   });
 }
 
