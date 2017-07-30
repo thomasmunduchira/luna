@@ -141,7 +141,8 @@ function describeImages() {
     console.log("Try to make call for get and analyze images");
     var images = document.getElementsByTagName('img');
     var srcList = [];
-    for(var i = 0; i < 5; i++){
+    var i;
+    for(i = 0; i < 3; i++){
       console.log("this is an OG img mofos: " + images[i].src);
       srcList.push(images[i].src);
     }
@@ -154,11 +155,11 @@ function describeImages() {
     },
     success: function (data) {
       console.log("images analysis works: " + JSON.stringify(data));
-      var text = new SpeechSynthesisUtterance(data);
-      synth.speak(text);
-      chrome.runtime.sendMessage({"actions" : "describeImages"}, function (response) {
-          console.log("describeImages response: " + JSON.stringify(response));
-      });
+      // var text = new SpeechSynthesisUtterance(data);
+      // synth.speak(text);
+      // chrome.runtime.sendMessage({"actions" : "describeImages"}, function (response) {
+      //     console.log("describeImages response: " + JSON.stringify(response));
+      // });
     }
   });
 }
