@@ -31,7 +31,8 @@ var intentFuncMap = {
   "go_back": goBack,
   "go_forward": goForward,
   "show_links": showLinks,
-  "open_link": openLink
+  "open_link": openLink,
+  "invert_colors": invertColors
 };
 
 function scrollUp() {
@@ -106,6 +107,32 @@ function openLink() {
   window.location.href = link;
   chrome.runtime.sendMessage({"actions" : "openLink"}, function (response) {
       console.log("openLink response: " + JSON.stringify(response));
+  });
+}
+
+function invertColors() {
+    (function () {
+      var css = 'html {-webkit-filter: invert(100%);' + '-moz-filter: invert(100%);' + '-o-filter: invert(100%);' + '-ms-filter: invert(100%); }';
+      var head = document.getElementsByTagName('head')[0];
+      var style = document.createElement('style');
+      if (!window.counter) {
+          window.counter = 1;
+      } else {
+          window.counter++;
+          if (window.counter % 2 == 0) {
+              var css = 'html {-webkit-filter: invert(0%); -moz-filter: invert(0%); -o-filter: invert(0%); -ms-filter: invert(0%); }'
+          }
+      }
+      style.type = 'text/css';
+      if (style.styleSheet) {
+          style.styleSheet.cssText = css;
+      } else {
+          style.appendChild(document.createTextNode(css));
+      }
+      head.appendChild(style);
+  }());
+  chrome.runtime.sendMessage({"actions" : "invertColors"}, function (response) {
+      console.log("invertColors response: " + JSON.stringify(response));
   });
 }
 
