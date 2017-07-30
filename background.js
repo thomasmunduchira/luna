@@ -335,14 +335,14 @@ function getIntent(query) {
             });
             break;
 
-          case "google_search":
-            var gUrl = "http://google.com/#q=" + data.result.parameters.any.split(" ").join("+");
-            chrome.tabs.create({
-              url: gUrl
-            }, function(tab) {
-              console.log("google_search request completed!");
-            });
-            break;
+          // case "google_search":
+          //   var gUrl = "http://google.com/#q=" + data.result.parameters.any.split(" ").join("+");
+          //   chrome.tabs.create({
+          //     url: gUrl
+          //   }, function(tab) {
+          //     console.log("google_search request completed!");
+          //   });
+          //   break;
 
           case "stackoverflow_search":
             var soUrl = "https://stackoverflow.com/search?q=" + data.result.parameters.any.split(" ").join("+");
@@ -478,6 +478,34 @@ function getIntent(query) {
             });
             break;
 
+          case "more_sitessearch":
+            var site = data.result.parameters.popSites;
+            var query = data.result.parameters.any;
+            var url = "";
+            switch(site){
+              case "quora":
+                url = "https://www.quora.com/search?q="+query;
+                break;
+              case "amazon":
+                url = "https://www.amazon.com/s/field-keywords"+query;
+                break;
+              case "facebook":
+                url = "https://www.facebook.com/search/top/?q="+query;
+                break;
+              case "twitter":
+                url = "https://twitter.com/search?q="+query;
+                break;
+              case "google":
+                url = "http://google.com/#q=" + query;
+              default:
+                //we screwed
+            }
+            chrome.tabs.create({
+              url: url
+            }, function(tab) {
+              console.log("more_sitessearch request completed!");
+            });
+            break;
           default:
             chrome.tabs.query({
               currentWindow: true,
